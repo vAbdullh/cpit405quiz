@@ -12,26 +12,38 @@ export function Home({ onSelectChapter }: HomeProps) {
         CPIT 405 – Web Application Development
       </h1>
       <p className="text-sm sm:text-base text-muted-foreground mb-8 sm:mb-12">Select a chapter to begin the quiz.</p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card 
-          className="hover:border-foreground transition-colors cursor-pointer border-2" 
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card
+          className="hover:border-foreground transition-colors cursor-pointer border-2"
           onClick={() => onSelectChapter('html')}
         >
           <CardHeader>
-            <CardTitle className="text-lg sm:text-xl border-b pb-2">HTML Placeholder</CardTitle>
+            <CardTitle className="text-lg sm:text-xl border-b pb-2">HTML</CardTitle>
           </CardHeader>
           <CardContent>
             <Button variant="default" className="w-full">Start Chapter</Button>
           </CardContent>
         </Card>
 
-        <Card 
-          className="hover:border-foreground transition-colors cursor-pointer border-2" 
+        <Card
+          className="hover:border-foreground transition-colors cursor-pointer border-2"
           onClick={() => onSelectChapter('css')}
         >
           <CardHeader>
-            <CardTitle className="text-lg sm:text-xl border-b pb-2">CSS Placeholder</CardTitle>
+            <CardTitle className="text-lg sm:text-xl border-b pb-2">CSS</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button variant="default" className="w-full">Start Chapter</Button>
+          </CardContent>
+        </Card>
+
+        <Card
+          className="hover:border-foreground transition-colors cursor-pointer border-2"
+          onClick={() => onSelectChapter('js')}
+        >
+          <CardHeader>
+            <CardTitle className="text-lg sm:text-xl border-b pb-2">JavaScript</CardTitle>
           </CardHeader>
           <CardContent>
             <Button variant="default" className="w-full">Start Chapter</Button>

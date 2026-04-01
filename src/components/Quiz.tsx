@@ -1,12 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { chapters, type MatchingQuestion } from '../data';
+import { chapters, type MatchingQuestion, type MCQQuestion, type Question } from '../data';
+
+function shuffleArray<T>(array: T[]): T[] {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+}
+
+function prepareQuestions(questions: Question[]): Question[] {
+  return shuffleArray(questions).map(q => {
+    if (q.type === 'mcq') {
+      return { ...q, options: shuffleArray((q as MCQQuestion).options) };
+    }
+    if (q.type === 'matching') {
+      return { ...q, pairs: shuffleArray((q as MatchingQuestion).pairs) };
+    }
+    return q;
+  });
+}
 
 export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: () => void }) {
   const chapter = chapters[chapterId];
+  const [shuffledQuestions, setShuffledQuestions] = useState(() => prepareQuestions(chapter.questions));
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [incorrect, setIncorrect] = useState(0);
@@ -22,8 +45,15 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
   const [showResultModal, setShowResultModal] = useState(false);
   const [tappedLeftId, setTappedLeftId] = useState<string | null>(null);
 
-  const question = chapter.questions[currentIndex];
-  const total = chapter.questions.length;
+  const question = shuffledQuestions[currentIndex];
+  const total = shuffledQuestions.length;
+
+  const currentRightDropZones = useMemo(() => {
+    if (question && question.type === 'matching') {
+      return shuffleArray(Array.from(new Set((question as MatchingQuestion).pairs.flatMap(p => p.rightOptions))));
+    }
+    return [];
+  }, [question]);
 
   const resetState = () => {
     setStatus('answering');
@@ -145,9 +175,7 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
 
   const renderMatching = () => {
     const q = question as MatchingQuestion;
-    // Get unique right options for drop zones
-    const rightDropZones = Array.from(new Set(q.pairs.flatMap(p => p.rightOptions)));
-    // Get unmatched left items to render at the top
+    const rightDropZones = currentRightDropZones;
     const unmatchedPairs = q.pairs.filter(p => !matchingAnswers[p.id]);
 
     return (
@@ -333,6 +361,7 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
                 setCurrentIndex(0);
                 setCorrect(0);
                 setIncorrect(0);
+                setShuffledQuestions(prepareQuestions(chapter.questions));
                 resetState();
                 setShowResultModal(false);
               }}>Restart</Button>
