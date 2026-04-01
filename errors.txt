@@ -1,0 +1,3 @@
+src/components/Quiz.tsx(7,20): error TS1484: 'Question' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/Quiz.tsx(7,20): error TS6133: 'Question' is declared but its value is never read.
+src/components/Quiz.tsx(7,30): error TS1484: 'MatchingQuestion' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
