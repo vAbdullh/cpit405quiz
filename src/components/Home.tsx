@@ -7,11 +7,11 @@ interface HomeProps {
 
 export function Home({ onSelectChapter }: HomeProps) {
   return (
-    <div className="max-w-3xl mx-auto py-12 px-6 font-mono text-center">
-      <h1 className="text-3xl font-bold mb-8 uppercase tracking-widest text-foreground">
+    <div className="max-w-3xl mx-auto py-8 sm:py-12 px-4 sm:px-6 font-mono text-center">
+      <h1 className="text-xl sm:text-3xl font-bold mb-6 sm:mb-8 uppercase tracking-widest text-foreground">
         CPIT 405 – Web Application Development
       </h1>
-      <p className="text-muted-foreground mb-12">Select a chapter to begin the quiz.</p>
+      <p className="text-sm sm:text-base text-muted-foreground mb-8 sm:mb-12">Select a chapter to begin the quiz.</p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card 
@@ -19,7 +19,7 @@ export function Home({ onSelectChapter }: HomeProps) {
           onClick={() => onSelectChapter('html')}
         >
           <CardHeader>
-            <CardTitle className="text-xl border-b pb-2">HTML Placeholder</CardTitle>
+            <CardTitle className="text-lg sm:text-xl border-b pb-2">HTML Placeholder</CardTitle>
           </CardHeader>
           <CardContent>
             <Button variant="default" className="w-full">Start Chapter</Button>
@@ -31,7 +31,7 @@ export function Home({ onSelectChapter }: HomeProps) {
           onClick={() => onSelectChapter('css')}
         >
           <CardHeader>
-            <CardTitle className="text-xl border-b pb-2">CSS Placeholder</CardTitle>
+            <CardTitle className="text-lg sm:text-xl border-b pb-2">CSS Placeholder</CardTitle>
           </CardHeader>
           <CardContent>
             <Button variant="default" className="w-full">Start Chapter</Button>

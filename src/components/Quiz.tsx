@@ -20,6 +20,7 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
   const [matchingAnswers, setMatchingAnswers] = useState<Record<string, string>>({});
   const [showMatchingAnswers, setShowMatchingAnswers] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
+  const [tappedLeftId, setTappedLeftId] = useState<string | null>(null);
 
   const question = chapter.questions[currentIndex];
   const total = chapter.questions.length;
@@ -30,6 +31,7 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
     setSelectedAnswer('');
     setMatchingAnswers({});
     setShowMatchingAnswers(false);
+    setTappedLeftId(null);
   };
 
   const handleNext = () => {
@@ -68,6 +70,7 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
           setSelectedAnswer('');
           setMatchingAnswers({});
           setShowMatchingAnswers(false);
+          setTappedLeftId(null);
         } else {
            setShowResultModal(true);
         }
@@ -132,9 +135,9 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
       }
 
       return (
-        <div key={opt} className={`flex items-center space-x-3 p-4 rounded-md transition-colors ${bgColorClass}`}>
+        <div key={opt} className={`flex items-center space-x-2 sm:space-x-3 p-3 sm:p-4 rounded-md transition-colors ${bgColorClass}`}>
           <RadioGroupItem value={opt} id={opt} disabled={status !== 'answering'} />
-          <Label htmlFor={opt} className="cursor-pointer flex-1 text-base">{opt}</Label>
+          <Label htmlFor={opt} className="cursor-pointer flex-1 text-sm sm:text-base">{opt}</Label>
         </div>
       );
     });
@@ -148,17 +151,22 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
     const unmatchedPairs = q.pairs.filter(p => !matchingAnswers[p.id]);
 
     return (
-      <div className="space-y-6">
-        <div className="p-4 bg-muted/30 border rounded-md min-h-[80px]">
-          <p className="text-sm font-bold mb-2 uppercase text-muted-foreground">Drag these items:</p>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="p-3 sm:p-4 bg-muted/30 border rounded-md min-h-[80px]">
+          <p className="text-xs sm:text-sm font-bold mb-2 uppercase text-muted-foreground">Tap or Drag items:</p>
           <div className="flex flex-wrap gap-2">
-            {unmatchedPairs.length === 0 && <span className="text-sm italic opacity-50">All items placed</span>}
+            {unmatchedPairs.length === 0 && <span className="text-xs sm:text-sm italic opacity-50">All items placed</span>}
             {unmatchedPairs.map(pair => (
               <div 
                 key={pair.id}
                 draggable={status === 'answering'}
                 onDragStart={(e) => handleDragStart(e, pair.id)}
-                className={`px-3 py-2 bg-background border shadow-sm rounded cursor-move font-bold ${status !== 'answering' ? 'opacity-50' : 'hover:border-foreground'}`}
+                onClick={() => {
+                  if (status === 'answering') {
+                    setTappedLeftId(tappedLeftId === pair.id ? null : pair.id);
+                  }
+                }}
+                className={`px-2 sm:px-3 py-1 sm:py-2 bg-background border shadow-sm rounded cursor-pointer sm:cursor-move font-bold text-sm sm:text-base transition-colors ${status !== 'answering' ? 'opacity-50' : 'hover:border-foreground'} ${tappedLeftId === pair.id ? 'ring-2 ring-primary border-primary' : ''}`}
               >
                 {pair.left}
               </div>
@@ -166,24 +174,29 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
           </div>
         </div>
 
-        <div className="space-y-3">
-           <p className="text-sm font-bold uppercase text-muted-foreground">Drop into correct matches:</p>
+        <div className="space-y-2 sm:space-y-3">
+           <p className="text-xs sm:text-sm font-bold uppercase text-muted-foreground">Drop or Tap correctly:</p>
            {rightDropZones.map(dropZone => {
-             // Find all left items dropped into this zone
              const droppedHere = q.pairs.filter(p => matchingAnswers[p.id] === dropZone);
              
              return (
                <div 
                  key={dropZone} 
-                 className="flex flex-col sm:flex-row gap-3 p-3 border rounded-md bg-secondary/20 min-h-[60px]"
+                 className={`flex flex-col sm:flex-row gap-2 sm:gap-3 p-2 sm:p-3 border rounded-md bg-secondary/20 min-h-[60px] cursor-pointer sm:cursor-default transition-colors ${tappedLeftId ? 'hover:bg-secondary/40 hover:border-primary/50' : ''}`}
                  onDragOver={handleDragOver}
                  onDrop={(e) => handleDrop(e, dropZone)}
+                 onClick={() => {
+                   if (status === 'answering' && tappedLeftId) {
+                     setMatchingAnswers(prev => ({ ...prev, [tappedLeftId]: dropZone }));
+                     setTappedLeftId(null);
+                   }
+                 }}
                >
-                 <div className="sm:w-1/3 flex items-center font-bold text-base p-2 bg-background rounded border border-dashed">
+                 <div className="sm:w-1/3 flex items-center font-bold text-sm sm:text-base p-2 bg-background rounded border border-dashed">
                    {dropZone}
                  </div>
                  <div className="sm:w-2/3 flex flex-wrap gap-2 items-center p-2 min-h-[40px]">
-                   {droppedHere.length === 0 && <span className="text-sm opacity-40">Drop here...</span>}
+                   {droppedHere.length === 0 && <span className="text-xs sm:text-sm opacity-40">Tap item then tap here...</span>}
                    {droppedHere.map(p => {
                       let itemBg = 'bg-background border shadow-sm';
                       if (status === 'checking') {
@@ -196,11 +209,11 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
                       return (
                         <div 
                           key={p.id}
-                          className={`px-3 py-1 rounded font-bold flex items-center gap-2 ${itemBg}`}
+                          className={`px-2 py-1 sm:px-3 sm:py-1 rounded font-bold text-sm sm:text-base flex items-center gap-2 ${itemBg}`}
                         >
                           {p.left}
                           {status === 'answering' && (
-                             <button onClick={() => handleUnassign(p.id)} className="text-xs text-muted-foreground hover:text-foreground">✕</button>
+                             <button onClick={(e) => { e.stopPropagation(); handleUnassign(p.id); }} className="text-base text-muted-foreground hover:text-foreground border-l border-muted-foreground/30 pl-2 ml-1">✕</button>
                           )}
                         </div>
                       );
@@ -232,28 +245,29 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-12 px-6 font-mono">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold uppercase">{chapter.title}</h2>
-        <Button variant="outline" onClick={onEndQuiz}>End Quiz</Button>
+    <div className="max-w-3xl mx-auto py-6 sm:py-12 px-4 sm:px-6 font-mono">
+      <div className="flex justify-between items-center mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold uppercase truncate pr-4">{chapter.title}</h2>
+        <Button variant="outline" size="sm" className="sm:hidden" onClick={onEndQuiz}>Home</Button>
+        <Button variant="outline" className="hidden sm:flex" onClick={onEndQuiz}>End Quiz</Button>
       </div>
 
-      <div className="flex gap-4 mb-8 text-sm uppercase tracking-wider bg-muted p-4 rounded-md border text-center font-bold">
-        <div className="flex-1">Total: {total}</div>
-        <div className="flex-1 text-primary">Correct: {correct}</div>
-        <div className="flex-1 text-foreground/70">False: {incorrect}</div>
+      <div className="flex gap-2 sm:gap-4 mb-6 sm:mb-8 text-xs sm:text-sm uppercase tracking-wider bg-muted p-3 sm:p-4 rounded-md border text-center font-bold">
+        <div className="flex-1">Total: <span className="sm:inline block">{total}</span></div>
+        <div className="flex-1 text-primary border-l sm:border-l-0 border-border pl-2 sm:pl-0">Correct: <span className="sm:inline block">{correct}</span></div>
+        <div className="flex-1 text-foreground/70 border-l sm:border-l-0 border-border pl-2 sm:pl-0">False: <span className="sm:inline block">{incorrect}</span></div>
       </div>
 
-      <Card className="border-2 shadow-sm transition-all">
-        <CardHeader className="bg-muted/30 border-b">
-          <CardTitle className="text-lg flex justify-between">
+      <Card className="border-2 shadow-sm transition-all text-sm sm:text-base">
+        <CardHeader className="bg-muted/30 border-b p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg flex justify-between">
             <span>Question {currentIndex + 1} of {total}</span>
             {status === 'checking' && isCorrect && <span className="text-green-600">Correct!</span>}
             {status === 'checking' && isCorrect === false && <span className="text-red-600">Incorrect</span>}
           </CardTitle>
-          <p className="mt-2 text-foreground font-semibold text-lg py-2">{question.text}</p>
+          <p className="mt-1 sm:mt-2 text-foreground font-semibold text-base sm:text-lg py-1 sm:py-2">{question.text}</p>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="pt-4 sm:pt-6 p-4 sm:p-6">
           {(question.type === 'mcq' || question.type === 'tf') && (
             <RadioGroup value={selectedAnswer} onValueChange={handleMcqTfSelect} className={`flex ${question.type === 'tf' ? 'flex-col sm:flex-row gap-4' : 'flex-col space-y-3'}`}>
               {renderMcqTfOptions()}
@@ -262,7 +276,7 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
 
           {question.type === 'matching' && renderMatching()}
         </CardContent>
-        <CardFooter className="bg-muted/10 border-t pt-6 rounded-b-xl flex justify-end gap-3 flex-wrap">
+        <CardFooter className="bg-muted/10 border-t p-4 sm:p-6 rounded-b-xl flex justify-end gap-2 sm:gap-3 flex-wrap">
           
           {question.type === 'matching' && status === 'answering' && (
              <Button 
@@ -271,7 +285,7 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
                disabled={isMatchingSubmitDisabled()} 
                onClick={() => submitAnswer()}
              >
-               Submit Matching
+               Submit
              </Button>
           )}
 
