@@ -19,6 +19,7 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
   const [selectedAnswer, setSelectedAnswer] = useState<string>('');
   const [matchingAnswers, setMatchingAnswers] = useState<Record<string, string>>({});
   const [showMatchingAnswers, setShowMatchingAnswers] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
 
   const question = chapter.questions[currentIndex];
   const total = chapter.questions.length;
@@ -36,8 +37,7 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
       setCurrentIndex(i => i + 1);
       resetState();
     } else {
-      alert(`Quiz Finished!\n\nResults:\nCorrect: ${correct}\nFalse: ${incorrect}\nTotal: ${total}`);
-      onEndQuiz();
+      setShowResultModal(true);
     }
   };
 
@@ -69,8 +69,7 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
           setMatchingAnswers({});
           setShowMatchingAnswers(false);
         } else {
-           alert(`Quiz Finished!\n\nResults:\nCorrect: ${correct + 1}\nFalse: ${incorrect}\nTotal: ${total}`);
-           onEndQuiz();
+           setShowResultModal(true);
         }
       }, 1500);
     } else {
@@ -298,6 +297,35 @@ export function Quiz({ chapterId, onEndQuiz }: { chapterId: string, onEndQuiz: (
           
         </CardFooter>
       </Card>
+
+      {showResultModal && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <Card className="w-full max-w-sm shadow-2xl border-2">
+            <CardHeader className="text-center border-b bg-muted/30 pb-4">
+              <CardTitle className="text-2xl font-bold uppercase tracking-widest">Quiz Finished!</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center py-8">
+              <div className="text-6xl font-black mb-6 tracking-tighter">
+                {Math.round((correct / total) * 100)}%
+              </div>
+              <div className="flex justify-center gap-6 text-lg font-bold uppercase tracking-wider">
+                <div className="text-primary flex flex-col"><span>Correct</span><span className="text-2xl">{correct}</span></div>
+                <div className="text-red-500 flex flex-col"><span>False</span><span className="text-2xl">{incorrect}</span></div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col sm:flex-row gap-3 justify-center bg-muted/10 border-t pt-6 rounded-b-xl">
+              <Button variant="outline" size="lg" className="w-full font-bold uppercase tracking-wider h-12" onClick={onEndQuiz}>Go Home</Button>
+              <Button size="lg" className="w-full font-bold uppercase tracking-wider h-12" onClick={() => {
+                setCurrentIndex(0);
+                setCorrect(0);
+                setIncorrect(0);
+                resetState();
+                setShowResultModal(false);
+              }}>Restart</Button>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
